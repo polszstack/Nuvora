@@ -30,7 +30,7 @@ export default async function Home() {
   const featuredProducts = [...sellerProducts, ...products.filter((product) => !sellerProducts.some((sellerProduct) => sellerProduct.id === product.id))].slice(0, 4);
 
   return (
-    <main className="min-h-screen bg-[#fbfaf8] text-[#1e2a27]">
+    <main className="min-h-screen bg-white text-[#1e2a27]">
       <StoreHeader />
       <section className="mx-auto grid max-w-7xl gap-12 px-6 pb-20 pt-14 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:px-10 lg:pt-20">
         <div>
@@ -95,7 +95,14 @@ export default async function Home() {
       <section id="story" className="mx-auto mb-20 max-w-7xl px-6 lg:px-10">
         <div className="grid overflow-hidden rounded-[2rem] bg-[#e9f0ec] lg:grid-cols-2">
           <div className="flex flex-col justify-center p-10 lg:p-16"><p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-[#e58d61]">The Nuvora standard</p><h2 className="max-w-md text-4xl font-semibold leading-tight">Less, but better. Always.</h2><p className="mt-5 max-w-md leading-7 text-[#6e7d75]">We work with independent makers to bring you pieces that earn their place in your home. No noise, no compromise, just useful beauty.</p><Link href="/about" className="mt-8 text-sm font-semibold text-[#1e2a27]">Read our story</Link></div>
-          <div className="relative min-h-[300px] bg-[#bed6ca]"><div className="absolute left-1/2 top-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full border-[28px] border-[#f1e6d5] shadow-[0_0_0_12px_#d5936d]"><div className="h-full w-full rounded-full bg-[#d5e5dd]" /></div></div>
+          <div className="relative aspect-square min-h-[300px] bg-[#f4efe5] lg:min-h-0">
+            <Image
+              src="/images/Gemini_Generated_Image_mllbqomllbqomllb.jpg"
+              alt="Thoughtfully selected Nuvora goods"
+              fill
+              className="object-contain"
+            />
+          </div>
         </div>
       </section>
 
