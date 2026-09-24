@@ -16,15 +16,22 @@ export function AddToCart({ product }: { product: CartItem }) {
       return;
     }
 
+    const stock = product.stock ?? 0;
     const cart = readCart();
     const existing = cart.find((item) => item.id === product.id);
+    const currentQuantity = existing?.quantity ?? 0;
+    const nextQuantity = currentQuantity + 1;
+    if (stock > 0 && nextQuantity > stock) {
+      return;
+    }
+
     const updated = existing
-      ? cart.map((item) => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item)
+      ? cart.map((item) => item.id === product.id ? { ...item, quantity: nextQuantity } : item)
       : [...cart, { ...product, quantity: 1 }];
     window.localStorage.setItem(CART_KEY, JSON.stringify(updated));
     window.dispatchEvent(new Event("cart-updated"));
     setAdded(true);
   }
 
-  return <button onClick={add} className="flex-1 rounded-full bg-[#1e2a27] px-7 py-4 text-sm font-semibold text-white hover:bg-[#e58d61]">{added ? "Added to cart ✓" : <>Add to cart <span className="ml-3">+</span></>}</button>;
+  return <button onClick={add} disabled={Boolean(product.stock && product.stock <= 0)} className="flex-1 rounded-full bg-[#1e2a27] px-7 py-4 text-sm font-semibold text-white hover:bg-[#e58d61] disabled:cursor-not-allowed disabled:bg-[#cbd3cf]">{added ? "Added to cart ✓" : <>Add to cart <span className="ml-3">+</span></>}</button>;
 }

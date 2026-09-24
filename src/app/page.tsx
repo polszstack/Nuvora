@@ -14,7 +14,7 @@ const categories = [
 
 export default async function Home() {
   const databaseProducts = await prisma.product.findMany({
-    where: { isActive: true },
+    where: { isActive: true, name: { not: "Linen Journal" } },
     orderBy: { createdAt: "desc" },
     take: 8,
   });
@@ -27,7 +27,10 @@ export default async function Home() {
     imageUrl: product.imageUrl,
     color: "bg-[#e9f0ec]",
   }));
-  const featuredProducts = [...sellerProducts, ...products.filter((product) => !sellerProducts.some((sellerProduct) => sellerProduct.id === product.id))].slice(0, 4);
+  const featuredProducts = [
+    ...sellerProducts,
+    ...products.filter((product) => product.id !== "linen-journal" && !sellerProducts.some((sellerProduct) => sellerProduct.id === product.id)),
+  ].slice(0, 4);
 
   return (
     <main className="min-h-screen bg-white text-[#1e2a27]">
