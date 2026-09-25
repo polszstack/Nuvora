@@ -4,6 +4,7 @@ import { ProductCard } from "@/components/product-card";
 import { StoreHeader } from "@/components/store-header";
 import { products } from "@/lib/products";
 import { prisma } from "@/lib/prisma";
+import { convertUsdToPhp, formatPhpCurrency, FREE_SHIPPING_THRESHOLD_USD } from "@/lib/currency";
 
 const categories = [
   { name: "Audio", icon: "o", tone: "bg-[#e9f4ef]" },
@@ -60,7 +61,7 @@ export default async function Home() {
           </div>
           <div className="mt-12 flex gap-10 border-t border-[#e6e6e0] pt-6 text-sm text-[#77817e]">
             <span><strong className="block text-xl text-[#1e2a27]">4.9/5</strong> from 2,000+ customers</span>
-            <span><strong className="block text-xl text-[#1e2a27]">Free</strong> shipping over $75</span>
+            <span><strong className="block text-xl text-[#1e2a27]">Free</strong> shipping over {formatPhpCurrency(convertUsdToPhp(FREE_SHIPPING_THRESHOLD_USD))}</span>
           </div>
         </div>
         <div className="relative aspect-[1408/768] w-full overflow-hidden rounded-[2rem] bg-[#dceae3]">
