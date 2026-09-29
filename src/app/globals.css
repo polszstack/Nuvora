@@ -23,3 +23,64 @@ img, svg {
   display: block;
   max-width: 100%;
 }
+
+.scroll-reveal {
+  --reveal-delay: 0ms;
+  --reveal-distance: 34px;
+  --reveal-scale: 0.992;
+}
+
+.scroll-reveal-ready .scroll-reveal {
+  opacity: 0;
+  transform: translate3d(0, var(--reveal-distance), 0) scale(var(--reveal-scale));
+  filter: blur(3px);
+  transition:
+    opacity 520ms ease,
+    transform 900ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 620ms ease;
+  transition-delay: var(--reveal-delay);
+  will-change: opacity, transform, filter;
+}
+
+.scroll-reveal-ready[data-scroll-direction="up"] .scroll-reveal:not(.is-visible) {
+  transform: translate3d(0, calc(var(--reveal-distance) * -0.8), 0) scale(var(--reveal-scale));
+}
+
+.scroll-reveal-ready .scroll-reveal.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  filter: blur(0);
+}
+
+.reveal-grid > .scroll-reveal:nth-child(2) {
+  --reveal-delay: 70ms;
+  --reveal-distance: 30px;
+}
+
+.reveal-grid > .scroll-reveal:nth-child(3) {
+  --reveal-delay: 140ms;
+  --reveal-distance: 26px;
+}
+
+.reveal-grid > .scroll-reveal:nth-child(4) {
+  --reveal-delay: 210ms;
+  --reveal-distance: 22px;
+}
+
+.scroll-reveal-ready .scroll-reveal:has(img) {
+  --reveal-distance: 42px;
+  --reveal-scale: 0.988;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .scroll-reveal-ready .scroll-reveal {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+}
