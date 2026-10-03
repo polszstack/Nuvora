@@ -7,6 +7,8 @@ import { Icon } from "@/components/ui-icon";
 import { CART_KEY, getCartSnapshot, getServerCartSnapshot, subscribeToCart, type CartItem } from "@/lib/cart";
 import { convertUsdToPhp, formatPhpCurrency, FREE_SHIPPING_THRESHOLD_USD, SHIPPING_FEE_USD } from "@/lib/currency";
 
+type CustomerAccount = { name: string | null; email: string };
+
 function quantityOptions(stock?: number) {
   const maxQuantity = Number.isFinite(stock) && stock && stock > 0 ? stock : 1;
   return Array.from({ length: maxQuantity }, (_, index) => index + 1);
@@ -15,8 +17,45 @@ function quantityOptions(stock?: number) {
 export default function CartPage() {
   const storedItems = useSyncExternalStore(subscribeToCart, getCartSnapshot, getServerCartSnapshot);
   const [items, setItems] = useState<CartItem[]>([]);
+  const [customerAccount, setCustomerAccount] = useState<CustomerAccount | null>(null);
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    fetch("/api/cart", { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) return null;
+        return response.json() as Promise<CartItem[]>;
+      })
+      .then((accountItems) => {
+        if (!active || !accountItems) return;
+        const mergedItems = accountItems.map((item) => ({ ...item, price: convertUsdToPhp(Number(item.price)) }));
+        setItems(mergedItems);
+        window.localStorage.setItem(CART_KEY, JSON.stringify(mergedItems));
+        window.dispatchEvent(new Event("cart-updated"));
+      })
+      .catch(() => undefined);
+
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    fetch("/api/customer/profile", { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) return null;
+        return response.json() as Promise<{ customer: CustomerAccount }>;
+      })
+      .then((result) => {
+        if (active && result) setCustomerAccount(result.customer);
+      })
+      .catch(() => undefined);
+
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     if (storedItems.length === 0) return;
@@ -55,6 +94,15 @@ export default function CartPage() {
     setItems(updated);
     window.localStorage.setItem(CART_KEY, JSON.stringify(updated));
     window.dispatchEvent(new Event("cart-updated"));
+    void fetch("/api/cart", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productId: id, action: nextQuantity === 0 ? "remove" : "set", quantity: nextQuantity }),
+    }).then(async (response) => {
+      if (response.ok) return;
+      const result = await response.json() as { error?: string };
+      setMessage(result.error ?? "Your cart couldn't be updated on your account.");
+    }).catch(() => setMessage("Your cart couldn't be updated on your account."));
   }
 
   async function checkout(event: React.FormEvent) {
@@ -63,7 +111,7 @@ export default function CartPage() {
     const response = await fetch("/api/orders", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, items: cartItems.map((item) => ({ slug: item.slug ?? item.id, quantity: item.quantity })) }),
+      body: JSON.stringify({ email: customerAccount?.email || email, items: cartItems.map((item) => ({ slug: item.slug ?? item.id, quantity: item.quantity })) }),
     });
     const result = await response.json() as { error?: string; orderId?: string };
     if (!response.ok) {
@@ -135,6 +183,15 @@ export default function CartPage() {
 
             <form onSubmit={checkout} className="h-fit rounded-2xl border border-[#e4e8e4] bg-white p-5 sm:p-6">
               <h2 className="font-semibold">Order summary</h2>
+              {customerAccount ? (
+                <div className="cart-customer-account">
+                  <span className="cart-customer-avatar" aria-hidden="true">{(customerAccount.name || customerAccount.email).charAt(0).toUpperCase()}</span>
+                  <span className="cart-customer-details"><span>Shopping as</span><strong>{customerAccount.name || "Nuvora customer"}</strong><span>{customerAccount.email}</span></span>
+                  <Link href="/account/customer/profile" className="cart-customer-profile" aria-label="Manage customer profile" title="Manage customer profile"><Icon name="user" size={18} /></Link>
+                </div>
+              ) : (
+                <div className="cart-signin-note"><Icon name="user" size={17} /><span>Have a customer account? <Link href="/account/customer/signin">Sign in</Link></span></div>
+              )}
               <div className="mt-6 flex justify-between gap-4 text-sm text-[#77817e]">
                 <span>Subtotal</span>
                 <span>{formatPhpCurrency(total)}</span>
@@ -147,14 +204,14 @@ export default function CartPage() {
                 <span>Total</span>
                 <span>{formatPhpCurrency(total + (isFreeShipping ? 0 : shippingFee))}</span>
               </div>
-              <input
+              {customerAccount ? <p className="cart-confirmation-email">Order confirmation will be sent to <strong>{customerAccount.email}</strong>.</p> : <input
                 required
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder="Email for order confirmation"
                 className="w-full rounded-xl border border-[#dfe5e0] px-4 py-3 text-sm outline-none focus:border-[#e58d61]"
-              />
+              />}
               <button className="mt-4 w-full rounded-full bg-[#1e2a27] py-3.5 text-sm font-semibold text-white hover:bg-[#e58d61]">
                 Place order
               </button>

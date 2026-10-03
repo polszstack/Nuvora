@@ -10,12 +10,14 @@ export default async function ProductsPage({ searchParams }: PageProps<"/product
   const databaseProducts = await prisma.product.findMany({
     where: { isActive: true },
     orderBy: { createdAt: "desc" },
+    include: { seller: { select: { name: true, shopName: true, isActive: true } } },
   });
   const catalog = databaseProducts.length > 0
     ? databaseProducts.map((product) => ({
         id: product.id, name: product.name, category: product.category,
         price: Number(product.price), description: product.description,
         imageUrl: product.imageUrl, color: "bg-[#e9f0ec]",
+        seller: product.seller?.isActive ? { name: product.seller.name, shopName: product.seller.shopName } : null,
       }))
     : products;
 

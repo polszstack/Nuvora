@@ -19,6 +19,7 @@ export default async function Home() {
     where: { isActive: true, name: { not: "Linen Journal" } },
     orderBy: { createdAt: "desc" },
     take: 8,
+    include: { seller: { select: { name: true, shopName: true, isActive: true } } },
   });
   const sellerProducts = databaseProducts.map((product) => ({
     id: product.id,
@@ -27,6 +28,7 @@ export default async function Home() {
     price: Number(product.price),
     description: product.description,
     imageUrl: product.imageUrl,
+    seller: product.seller?.isActive ? { name: product.seller.name, shopName: product.seller.shopName } : null,
     color: "bg-[#e9f0ec]",
   }));
   const featuredProducts = (sellerProducts.length > 0

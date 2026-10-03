@@ -12,7 +12,17 @@ export default async function SellerProductsPage() {
 
   const seller = await prisma.seller.findUnique({
     where: { id: session.userId },
-    include: { products: { orderBy: { createdAt: "desc" } } },
+    include: {
+      products: {
+        orderBy: { createdAt: "desc" },
+        include: {
+          cartItems: {
+            orderBy: { updatedAt: "desc" },
+            include: { customer: { select: { id: true, name: true, email: true } } },
+          },
+        },
+      },
+    },
   });
   if (!seller) redirect("/account/seller/signin");
 
@@ -88,6 +98,24 @@ export default async function SellerProductsPage() {
             </div>
           )}
         </div>
+
+        <section className="seller-interest-panel" aria-labelledby="seller-interest-heading">
+          <div className="seller-interest-header">
+            <div><p className="eyebrow">Shopper interest</p><h2 id="seller-interest-heading">Customers with your products in their carts</h2><p>Signed-in shoppers who currently have one of your products in their cart.</p></div>
+            <span className="seller-interest-count">{seller.products.reduce((count, product) => count + product.cartItems.length, 0)} {seller.products.reduce((count, product) => count + product.cartItems.length, 0) === 1 ? "customer" : "customers"}</span>
+          </div>
+          {seller.products.some((product) => product.cartItems.length > 0) ? (
+            <div className="seller-interest-grid">
+              {seller.products.filter((product) => product.cartItems.length > 0).map((product) => (
+                <article key={product.id} className="seller-interest-product">
+                  <h3>{product.name}</h3>
+                  <p>{product.cartItems.length} {product.cartItems.length === 1 ? "customer has" : "customers have"} this in their cart</p>
+                  <ul>{product.cartItems.map((item) => <li key={item.id}><span className="interest-avatar" aria-hidden="true">{(item.customer.name || item.customer.email).charAt(0).toUpperCase()}</span><span><strong>{item.customer.name || "Nuvora customer"}</strong><small>{item.customer.email}</small></span><span className="interest-quantity">×{item.quantity}</span></li>)}</ul>
+                </article>
+              ))}
+            </div>
+          ) : <div className="seller-interest-empty"><span className="empty-icon"><span aria-hidden="true">♡</span></span><h3>No customer carts yet.</h3><p>When a signed-in customer adds one of your products to their cart, you’ll see their account here.</p></div>}
+        </section>
       </section>
     </main>
   );

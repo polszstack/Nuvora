@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/nuvora-client"
 }
 
 datasource db {
@@ -8,20 +9,21 @@ datasource db {
 }
 
 model Product {
-  id          String   @id @default(cuid())
+  id          String      @id @default(cuid())
   name        String
-  slug        String   @unique
-  description String   @db.Text
+  slug        String      @unique
+  description String      @db.Text
   category    String
-  price       Decimal  @db.Decimal(10, 2)
-  stock       Int      @default(0)
-  imageUrl    String?  @db.LongText
-  isActive    Boolean  @default(true)
+  price       Decimal     @db.Decimal(10, 2)
+  stock       Int         @default(0)
+  imageUrl    String?     @db.LongText
+  isActive    Boolean     @default(true)
   sellerId    String?
-  seller      Seller?  @relation(fields: [sellerId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  seller      Seller?     @relation(fields: [sellerId], references: [id])
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
   orderItems  OrderItem[]
+  cartItems   CartItem[]
 }
 
 model Seller {
@@ -30,7 +32,7 @@ model Seller {
   name         String
   shopName     String
   phone        String?
-  profilePhoto String?  @db.LongText
+  profilePhoto String?   @db.LongText
   passwordHash String?
   isActive     Boolean   @default(true)
   products     Product[]
@@ -39,24 +41,39 @@ model Seller {
 }
 
 model Customer {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String     @id @default(cuid())
+  email        String     @unique
   name         String?
   phone        String?
-  address      String?  @db.Text
-  profilePhoto String?  @db.LongText
+  address      String?    @db.Text
+  profilePhoto String?    @db.LongText
   passwordHash String?
-  createdAt    DateTime @default(now())
+  createdAt    DateTime   @default(now())
   orders       Order[]
+  cartItems    CartItem[]
 }
 
 model AuthSession {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userType  UserType
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model CartItem {
   id         String   @id @default(cuid())
-  token      String   @unique
-  userType   UserType
-  userId     String
-  expiresAt  DateTime
+  quantity   Int      @default(1)
+  customerId String
+  productId  String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([customerId, productId])
+  @@index([productId, updatedAt])
 }
 
 enum UserType {

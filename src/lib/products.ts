@@ -7,6 +7,7 @@ export type Product = {
   color: string;
   imageUrl?: string | null;
   badge?: string;
+  seller?: { name: string; shopName: string } | null;
 };
 
 export const products: Product[] = [
