@@ -3,13 +3,40 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCart } from "@/components/add-to-cart";
 import { StoreHeader } from "@/components/store-header";
+import { Icon, type IconName } from "@/components/ui-icon";
 import { convertUsdToPhp, formatPhpCurrency, FREE_SHIPPING_THRESHOLD_USD } from "@/lib/currency";
 import { prisma } from "@/lib/prisma";
 
+const categoryIcons: Record<string, IconName> = { Workspace: "desk", Wellness: "sun", Audio: "headphones", Travel: "bag" };
+
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const product = await prisma.product.findFirst({ where: { OR: [{ id }, { slug: id }], isActive: true } });
+  const product = await prisma.product.findFirst({
+    where: { OR: [{ id }, { slug: id }], isActive: true },
+  });
   if (!product) notFound();
   const priceInPhp = convertUsdToPhp(Number(product.price));
-  return <main className="min-h-screen bg-white"><StoreHeader /><section className="mx-auto grid max-w-6xl gap-12 px-6 pb-24 pt-8 lg:grid-cols-[1.15fr_.85fr] lg:px-10 lg:pt-14"><div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[2rem] bg-[#e9f0ec]">{product.imageUrl ? <Image src={product.imageUrl} alt={product.name} fill unoptimized className="object-cover" /> : <div className="relative flex h-72 w-56 items-end justify-center rounded-t-[7rem] rounded-b-3xl bg-[#f6f0e6] shadow-2xl"><div className="absolute top-[-2.5rem] h-24 w-36 rounded-full bg-[#b9d5c8] shadow-inner" /><div className="mb-12 h-20 w-20 rounded-full border-[12px] border-[#d5936d] bg-[#f5c1a5]" /><span className="absolute bottom-5 text-[10px] font-bold uppercase tracking-[0.3em] text-[#718079]">nuvora</span></div>}</div><div className="flex flex-col justify-center"><Link href="/products" className="mb-10 text-sm text-[#8b9791] hover:text-[#e58d61]">← Back to collection</Link><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#e58d61]">{product.category}</p><h1 className="mt-3 text-5xl font-semibold tracking-[-0.05em]">{product.name}</h1><p className="mt-5 text-2xl font-semibold">{formatPhpCurrency(priceInPhp)}</p><p className="mt-6 max-w-md leading-7 text-[#77817e]">{product.description}</p><p className="mt-4 text-sm text-[#8b9791]">{product.stock > 0 ? `${product.stock} available` : "Currently out of stock"}</p><div className="mt-10 flex gap-3">{product.stock > 0 ? <AddToCart product={{ id: product.id, slug: product.slug, name: product.name, price: priceInPhp, quantity: 1, stock: product.stock }} /> : <button disabled className="flex-1 rounded-full bg-[#cbd3cf] px-7 py-4 text-sm font-semibold text-white">Out of stock</button>}<button className="rounded-full border border-[#dfe3df] px-5 text-xl hover:border-[#e58d61]">♡</button></div><p className="mt-5 text-center text-xs text-[#8b9791]">Free shipping on orders over {formatPhpCurrency(convertUsdToPhp(FREE_SHIPPING_THRESHOLD_USD))} · 30-day returns</p></div></section></main>;
+
+  return <main className="storefront">
+    <StoreHeader />
+    <section className="site-container product-detail-section">
+      <nav className="product-breadcrumb" aria-label="Breadcrumb"><Link href="/products">The collection</Link><span aria-hidden="true">/</span><Link href={`/products?category=${encodeURIComponent(product.category)}`}>{product.category}</Link><span aria-hidden="true">/</span><span aria-current="page">{product.name}</span></nav>
+      <div className="product-detail-grid">
+        <div className="product-detail-image">
+          {product.imageUrl ? <Image src={product.imageUrl} alt={product.name} fill unoptimized sizes="(max-width: 767px) 100vw, 55vw" className="object-cover" /> : <div className="product-placeholder"><span className="placeholder-orbit" /><Icon name={categoryIcons[product.category] || "box"} size={96} strokeWidth={.8} /><span className="placeholder-label">Image coming soon</span></div>}
+        </div>
+        <div className="product-detail-copy">
+          <p className="eyebrow">{product.category}</p>
+          <h1>{product.name}</h1>
+          <p className="detail-price">{formatPhpCurrency(priceInPhp)}</p>
+          <p className="detail-description">{product.description}</p>
+          <p className={`stock-status ${product.stock > 0 ? "" : "stock-empty"}`}><span />{product.stock > 0 ? `In stock · ${product.stock} available` : "Currently out of stock"}</p>
+          <div className="detail-cart">{product.stock > 0 ? <AddToCart product={{ id: product.id, slug: product.slug, name: product.name, price: priceInPhp, quantity: 1, stock: product.stock }} /> : <button disabled className="button-primary w-full opacity-50">Out of stock</button>}</div>
+          <div className="detail-shipping"><Icon name="box" size={19} /><p>Free shipping on orders over <strong>{formatPhpCurrency(convertUsdToPhp(FREE_SHIPPING_THRESHOLD_USD))}</strong></p></div>
+          <details className="product-disclosure"><summary>The Nuvora standard <span aria-hidden="true">+</span></summary><p>Every piece in our collection is chosen with everyday living in mind. Thoughtful objects, independent makers, and a little more intention.</p></details>
+          <Link href="/products" className="text-link mt-7"><Icon name="arrow" className="rotate-180" size={17} /> Back to the collection</Link>
+        </div>
+      </div>
+    </section>
+  </main>;
 }

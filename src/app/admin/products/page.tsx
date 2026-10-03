@@ -9,7 +9,106 @@ import { prisma } from "@/lib/prisma";
 export default async function SellerProductsPage() {
   const session = await getSession();
   if (!session || session.userType !== "SELLER") redirect("/account/seller/signin");
-  const seller = await prisma.seller.findUnique({ where: { id: session.userId }, include: { products: { orderBy: { createdAt: "desc" } } } });
+
+  const seller = await prisma.seller.findUnique({
+    where: { id: session.userId },
+    include: { products: { orderBy: { createdAt: "desc" } } },
+  });
   if (!seller) redirect("/account/seller/signin");
-  return <main className="min-h-screen bg-[#f4f6f3] text-[#1e2a27]"><aside className="fixed hidden h-screen w-64 border-r border-[#e0e6e1] bg-white p-8 md:block"><Link href="/" className="text-xl font-bold tracking-tight">nuvora<span className="text-[#e58d61]">.</span></Link><p className="mb-10 mt-2 text-xs text-[#93a098]">Seller workspace</p><nav className="space-y-2 text-sm"><Link href="/admin" className="block rounded-xl px-4 py-3 text-[#718079] hover:bg-[#f4f6f3]">Overview</Link><Link href="/admin/products" className="block rounded-xl bg-[#e9f0ec] px-4 py-3 font-semibold">Products</Link><Link href="/account/seller/profile" className="block rounded-xl px-4 py-3 text-[#718079] hover:bg-[#f4f6f3]">Shop profile</Link></nav></aside><section className="mx-auto max-w-6xl px-6 py-8 md:ml-64 md:px-12"><div className="mb-10 flex items-center justify-between"><div><p className="text-sm text-[#8c9891]">Catalog management</p><h1 className="mt-1 text-3xl font-semibold tracking-tight">{seller.shopName} products</h1><p className="mt-2 text-sm text-[#77817e]">{seller.products.length} {seller.products.length === 1 ? "product" : "products"} in your catalog</p></div><Link href="/admin" className="rounded-full border border-[#dce3de] bg-white px-5 py-2.5 text-sm font-semibold hover:border-[#e58d61]">Back to overview</Link></div><div className="overflow-hidden rounded-2xl border border-[#e0e6e1] bg-white"><div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#e9eeea] p-6"><div><h2 className="font-semibold">Product catalog</h2><p className="mt-1 text-sm text-[#8c9891]">Preview and manage products posted to the Nuvora store.</p></div><AdminProductForm /></div>{seller.products.length === 0 ? <p className="p-8 text-sm text-[#77817e]">No products yet. Add your first product above.</p> : <div className="grid gap-5 p-6 sm:grid-cols-2 lg:grid-cols-3">{seller.products.map((product) => <article key={product.id} className="overflow-hidden rounded-2xl border border-[#e5ebe6] bg-[#fbfcfa]"><div className="relative aspect-[4/3] overflow-hidden bg-[#e9f0ec]">{product.imageUrl ? <Image src={product.imageUrl} alt={product.name} fill unoptimized className="object-cover" /> : <div className="absolute inset-0 flex items-center justify-center"><div className="relative flex h-32 w-24 items-end justify-center rounded-t-[3rem] rounded-b-2xl bg-[#f6f0e6] shadow-lg"><div className="absolute top-[-1.2rem] h-10 w-16 rounded-full bg-[#b9d5c8]" /><div className="mb-5 h-8 w-8 rounded-full border-[5px] border-[#d5936d] bg-[#f5c1a5]" /></div></div>}<span className={`absolute left-3 top-3 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${product.isActive ? "bg-[#e9f4ef] text-[#557367]" : "bg-white text-[#8c9891]"}`}>{product.isActive ? "Published" : "Hidden"}</span></div><div className="p-5"><div className="flex items-start justify-between gap-3"><div><p className="text-xs uppercase tracking-wider text-[#98a39f]">{product.category}</p><h3 className="mt-1 font-semibold">{product.name}</h3></div><p className="font-semibold">{formatPhpCurrency(convertUsdToPhp(Number(product.price)))}</p></div><p className="mt-3 line-clamp-2 text-sm text-[#77817e]">{product.description}</p><div className="mt-5 flex items-center justify-between border-t border-[#e5ebe6] pt-4"><span className={product.stock < 5 ? "text-xs font-semibold text-[#c66d4c]" : "text-xs text-[#77817e]"}>{product.stock < 5 ? "Low stock · " : ""}{product.stock} available</span><Link href={`/products/${product.id}`} target="_blank" className="text-xs font-semibold text-[#e58d61] hover:text-[#1e2a27]">View in store ↗</Link></div></div></article>)}</div>}</div></section></main>;
+
+  return (
+    <main className="min-h-screen bg-[#f4f6f3] text-[#1e2a27]">
+      <AdminSidebar active="products" />
+      <section className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 md:ml-64 md:px-8 lg:px-12">
+        <div className="mb-8 grid gap-4 sm:mb-10 sm:flex sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-sm text-[#8c9891]">Catalog management</p>
+            <h1 className="mt-1 text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
+              {seller.shopName} products
+            </h1>
+            <p className="mt-2 text-sm text-[#77817e]">
+              {seller.products.length} {seller.products.length === 1 ? "product" : "products"} in your catalog
+            </p>
+          </div>
+          <Link href="/admin" className="rounded-full border border-[#dce3de] bg-white px-5 py-2.5 text-center text-sm font-semibold hover:border-[#e58d61]">
+            Back to overview
+          </Link>
+        </div>
+
+        <div className="overflow-hidden rounded-2xl border border-[#e0e6e1] bg-white">
+          <div className="grid gap-4 border-b border-[#e9eeea] p-4 sm:flex sm:items-center sm:justify-between sm:p-6">
+            <div>
+              <h2 className="font-semibold">Product catalog</h2>
+              <p className="mt-1 text-sm leading-6 text-[#8c9891]">Preview and manage products posted to the Nuvora store.</p>
+            </div>
+            <AdminProductForm />
+          </div>
+
+          {seller.products.length === 0 ? (
+            <p className="p-8 text-sm text-[#77817e]">No products yet. Add your first product above.</p>
+          ) : (
+            <div className="grid gap-5 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-3">
+              {seller.products.map((product) => (
+                <article key={product.id} className="overflow-hidden rounded-2xl border border-[#e5ebe6] bg-[#fbfcfa]">
+                  <div className="relative aspect-[4/3] overflow-hidden bg-[#e9f0ec]">
+                    {product.imageUrl ? (
+                      <Image src={product.imageUrl} alt={product.name} fill unoptimized className="object-cover" />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="relative flex h-32 w-24 items-end justify-center rounded-t-[3rem] rounded-b-2xl bg-[#f6f0e6] shadow-lg">
+                          <div className="absolute top-[-1.2rem] h-10 w-16 rounded-full bg-[#b9d5c8]" />
+                          <div className="mb-5 h-8 w-8 rounded-full border-[5px] border-[#d5936d] bg-[#f5c1a5]" />
+                        </div>
+                      </div>
+                    )}
+                    <span className={`absolute left-3 top-3 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${product.isActive ? "bg-[#e9f4ef] text-[#557367]" : "bg-white text-[#8c9891]"}`}>
+                      {product.isActive ? "Published" : "Hidden"}
+                    </span>
+                  </div>
+                  <div className="p-5">
+                    <div className="grid gap-2 sm:flex sm:items-start sm:justify-between sm:gap-3">
+                      <div className="min-w-0">
+                        <p className="text-xs uppercase tracking-wider text-[#98a39f]">{product.category}</p>
+                        <h3 className="mt-1 font-semibold leading-snug">{product.name}</h3>
+                      </div>
+                      <p className="shrink-0 font-semibold">{formatPhpCurrency(convertUsdToPhp(Number(product.price)))}</p>
+                    </div>
+                    <p className="mt-3 line-clamp-2 text-sm leading-6 text-[#77817e]">{product.description}</p>
+                    <div className="mt-5 grid gap-3 border-t border-[#e5ebe6] pt-4 sm:flex sm:items-center sm:justify-between">
+                      <span className={product.stock < 5 ? "text-xs font-semibold text-[#c66d4c]" : "text-xs text-[#77817e]"}>
+                        {product.stock < 5 ? "Low stock | " : ""}{product.stock} available
+                      </span>
+                      <Link href={`/products/${product.id}`} target="_blank" className="text-xs font-semibold text-[#e58d61] hover:text-[#1e2a27]">
+                        View in store -&gt;
+                      </Link>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function AdminSidebar({ active }: { active: "overview" | "products" }) {
+  return (
+    <aside className="border-b border-[#e0e6e1] bg-white p-4 md:fixed md:h-screen md:w-64 md:border-b-0 md:border-r md:p-8">
+      <Link href="/" className="text-xl font-bold tracking-tight">nuvora<span className="text-[#e58d61]">.</span></Link>
+      <p className="mb-4 mt-2 text-xs text-[#93a098] md:mb-10">Seller workspace</p>
+      <nav className="flex gap-2 overflow-x-auto text-sm md:block md:space-y-2 md:overflow-visible">
+        <Link href="/admin" className={`block rounded-xl px-4 py-3 ${active === "overview" ? "bg-[#e9f0ec] font-semibold" : "text-[#718079] hover:bg-[#f4f6f3]"}`}>
+          Overview
+        </Link>
+        <Link href="/admin/products" className={`block rounded-xl px-4 py-3 ${active === "products" ? "bg-[#e9f0ec] font-semibold" : "text-[#718079] hover:bg-[#f4f6f3]"}`}>
+          Products
+        </Link>
+        <Link href="/account/seller/profile" className="block rounded-xl px-4 py-3 text-[#718079] hover:bg-[#f4f6f3]">
+          Shop profile
+        </Link>
+      </nav>
+    </aside>
+  );
 }

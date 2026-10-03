@@ -4,7 +4,7 @@ import { createCustomerAccount } from "../actions";
 
 export default function CustomerAccountPage() {
   return (
-    <main className="min-h-screen bg-white text-[#1e2a27]">
+    <main className="account-page min-h-screen text-[#1e2a27]">
       <StoreHeader />
       <section className="mx-auto max-w-md px-6 pb-24 pt-16 text-center">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#e58d61]">Customer account</p>

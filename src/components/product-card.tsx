@@ -2,7 +2,22 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Product } from "@/lib/products";
 import { convertUsdToPhp, formatPhpCurrency } from "@/lib/currency";
+import { Icon, type IconName } from "@/components/ui-icon";
+
+const categoryIcons: Record<string, IconName> = { Workspace: "desk", Wellness: "sun", Audio: "headphones", Travel: "bag" };
 
 export function ProductCard({ product }: { product: Product }) {
-  return <article className="group"><Link href={`/products/${product.id}`} className={`relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl ${product.color || "bg-[#e9f0ec]"}`}>{product.imageUrl ? <Image src={product.imageUrl} alt={product.name} fill unoptimized className="object-cover transition duration-500 group-hover:scale-105" /> : <div className="relative flex h-44 w-36 items-end justify-center rounded-t-[5rem] rounded-b-3xl bg-[#f6f0e6] shadow-xl transition duration-500 group-hover:scale-105 group-hover:rotate-3"><div className="absolute top-[-2rem] h-16 w-24 rounded-full bg-[#b9d5c8] shadow-inner" /><div className="mb-8 h-12 w-12 rounded-full border-[8px] border-[#d5936d] bg-[#f5c1a5]" /><span className="absolute bottom-3 text-[9px] font-bold uppercase tracking-[0.25em] text-[#718079]">nuvora</span></div>}{product.badge && <span className="absolute left-4 top-4 rounded-full bg-white/80 px-3 py-1 text-[10px] font-bold uppercase tracking-wider">{product.badge}</span>}<span className="absolute bottom-4 right-4 flex h-10 w-10 translate-y-2 items-center justify-center rounded-full bg-white opacity-0 shadow-sm transition group-hover:translate-y-0 group-hover:opacity-100">↗</span></Link><div className="mt-4 flex justify-between gap-4"><div><p className="text-xs uppercase tracking-wider text-[#98a39f]">{product.category}</p><h3 className="mt-1 font-semibold">{product.name}</h3></div><p className="font-semibold">{formatPhpCurrency(convertUsdToPhp(product.price))}</p></div><p className="mt-1 text-sm text-[#89938e]">{product.description}</p></article>;
+  return (
+    <article className="product-card">
+      <Link href={`/products/${product.id}`} className={`product-image ${product.color || "bg-[#e9f0ec]"}`} aria-label={`View ${product.name}`}>
+        {product.imageUrl ? <Image src={product.imageUrl} alt={product.name} fill unoptimized sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 25vw" className="object-cover" /> :
+          <div className="product-placeholder"><span className="placeholder-orbit" /><Icon name={categoryIcons[product.category] || "box"} size={76} strokeWidth={0.8} /><span className="placeholder-label">{product.category}</span></div>}
+        {product.badge && <span className="product-badge">{product.badge}</span>}
+        <span className="product-open"><Icon name="arrow" size={18} /></span>
+      </Link>
+      <div className="product-meta"><span>{product.category}</span><span className="product-dot" aria-hidden="true" /></div>
+      <div className="product-title-row"><h3><Link href={`/products/${product.id}`}>{product.name}</Link></h3><p>{formatPhpCurrency(convertUsdToPhp(product.price))}</p></div>
+      <p className="product-description">{product.description}</p>
+    </article>
+  );
 }

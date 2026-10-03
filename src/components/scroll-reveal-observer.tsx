@@ -38,10 +38,13 @@ export function ScrollRevealObserver() {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          entry.target.classList.toggle("is-visible", entry.isIntersecting);
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
         });
       },
-      { rootMargin: "-6% 0px -10% 0px", threshold: 0.18 },
+      { rootMargin: "0px 0px -24px 0px", threshold: 0.08 },
     );
 
     reveals.forEach((element) => observer.observe(element));
