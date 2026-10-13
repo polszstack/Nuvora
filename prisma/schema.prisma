@@ -11,7 +11,7 @@ datasource db {
 model Product {
   id          String      @id @default(cuid())
   name        String
-  slug        String      @unique
+  slug        String      @unique(map: "Product_slug_key")
   description String      @db.Text
   category    String
   price       Decimal     @db.Decimal(10, 2)
@@ -19,16 +19,18 @@ model Product {
   imageUrl    String?     @db.LongText
   isActive    Boolean     @default(true)
   sellerId    String?
-  seller      Seller?     @relation(fields: [sellerId], references: [id])
+  seller      Seller?     @relation(fields: [sellerId], references: [id], map: "Product_sellerId_fkey")
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   orderItems  OrderItem[]
   cartItems   CartItem[]
+
+  @@map("product")
 }
 
 model Seller {
   id           String    @id @default(cuid())
-  email        String    @unique
+  email        String    @unique(map: "Seller_email_key")
   name         String
   shopName     String
   phone        String?
@@ -38,11 +40,13 @@ model Seller {
   products     Product[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+
+  @@map("seller")
 }
 
 model Customer {
   id           String     @id @default(cuid())
-  email        String     @unique
+  email        String     @unique(map: "Customer_email_key")
   name         String?
   phone        String?
   address      String?    @db.Text
@@ -51,15 +55,19 @@ model Customer {
   createdAt    DateTime   @default(now())
   orders       Order[]
   cartItems    CartItem[]
+
+  @@map("customer")
 }
 
 model AuthSession {
   id        String   @id @default(cuid())
-  token     String   @unique
+  token     String   @unique(map: "AuthSession_token_key")
   userType  UserType
   userId    String
   expiresAt DateTime
   createdAt DateTime @default(now())
+
+  @@map("authsession")
 }
 
 model CartItem {
@@ -74,6 +82,7 @@ model CartItem {
 
   @@unique([customerId, productId])
   @@index([productId, updatedAt])
+  @@map("cartitem")
 }
 
 enum UserType {
@@ -86,9 +95,11 @@ model Order {
   status     OrderStatus @default(PENDING)
   total      Decimal     @db.Decimal(10, 2)
   customerId String
-  customer   Customer    @relation(fields: [customerId], references: [id])
+  customer   Customer    @relation(fields: [customerId], references: [id], onDelete: NoAction, map: "Order_customerId_fkey")
   items      OrderItem[]
   createdAt  DateTime    @default(now())
+
+  @@map("order")
 }
 
 model OrderItem {
@@ -97,8 +108,10 @@ model OrderItem {
   unitPrice Decimal @db.Decimal(10, 2)
   orderId   String
   productId String
-  order     Order   @relation(fields: [orderId], references: [id])
-  product   Product @relation(fields: [productId], references: [id])
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: NoAction, map: "OrderItem_orderId_fkey")
+  product   Product @relation(fields: [productId], references: [id], onDelete: NoAction, map: "OrderItem_productId_fkey")
+
+  @@map("orderitem")
 }
 
 enum OrderStatus {
