@@ -465,6 +465,11 @@ input, select, textarea { min-width: 0; max-width: 100%; }
   .product-grid { gap: 24px 12px; }
 }
 
+.product-navigation-feedback { position: fixed; z-index: 100; bottom: max(24px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; width: max-content; max-width: calc(100% - 32px); padding: 16px 22px; border: 1px solid #d4d9ca; border-radius: 8px; background: var(--ink); color: white; box-shadow: 0 8px 30px rgb(38 60 50 / 20%); font-size: 14px; pointer-events: none; }
+.loading-spinner { display: inline-block; flex: none; width: 18px; height: 18px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: loading-spin .75s linear infinite; }
+.product-photo-status { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 24px; color: var(--muted); font-size: 13px; }
+@keyframes loading-spin { to { transform: rotate(360deg); } }
+
 .scroll-reveal {
   --reveal-delay: 0ms;
   --reveal-distance: 34px;

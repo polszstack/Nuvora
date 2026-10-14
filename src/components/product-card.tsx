@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { ProductNavigationFeedback } from "@/components/product-navigation-feedback";
 import type { Product } from "@/lib/products";
 import { convertUsdToPhp, formatPhpCurrency } from "@/lib/currency";
 import { Icon, type IconName } from "@/components/ui-icon";
@@ -14,10 +15,11 @@ export function ProductCard({ product }: { product: Product }) {
           <div className="product-placeholder"><span className="placeholder-orbit" /><Icon name={categoryIcons[product.category] || "box"} size={76} strokeWidth={0.8} /><span className="placeholder-label">{product.category}</span></div>}
         {product.badge && <span className="product-badge">{product.badge}</span>}
         <span className="product-open"><Icon name="arrow" size={18} /></span>
+        <ProductNavigationFeedback />
       </Link>
       <div className="product-meta"><span>{product.category}</span><span className="product-dot" aria-hidden="true" /></div>
       {product.seller && <p className="product-seller-byline"><span aria-hidden="true">{product.seller.shopName.charAt(0).toUpperCase()}</span> From <strong>{product.seller.shopName}</strong></p>}
-      <div className="product-title-row"><h3><Link href={`/products/${product.id}`} prefetch={true}>{product.name}</Link></h3><p>{formatPhpCurrency(convertUsdToPhp(product.price))}</p></div>
+      <div className="product-title-row"><h3><Link href={`/products/${product.id}`} prefetch={true}>{product.name}<ProductNavigationFeedback /></Link></h3><p>{formatPhpCurrency(convertUsdToPhp(product.price))}</p></div>
       <p className="product-description">{product.description}</p>
     </article>
   );

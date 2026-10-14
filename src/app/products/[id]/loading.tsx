@@ -4,7 +4,7 @@ export default function ProductLoading() {
   return <main className="storefront" aria-busy="true">
     <StoreHeader />
     <section className="site-container product-detail-section" role="status" aria-label="Loading product">
-      <p className="product-breadcrumb">Loading product…</p>
+      <p className="product-breadcrumb"><span className="loading-spinner" aria-hidden="true" /> Loading product…</p>
       <div className="product-detail-grid" aria-hidden="true">
         <div className="product-detail-image animate-pulse" />
         <div className="space-y-6">

@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { ProductDetailImage } from "@/components/product-detail-image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCart } from "@/components/add-to-cart";
@@ -22,9 +22,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     <section className="site-container product-detail-section">
       <nav className="product-breadcrumb" aria-label="Breadcrumb"><Link href="/products">The collection</Link><span aria-hidden="true">/</span><Link href={`/products?category=${encodeURIComponent(product.category)}`}>{product.category}</Link><span aria-hidden="true">/</span><span aria-current="page">{product.name}</span></nav>
       <div className="product-detail-grid">
-        <div className="product-detail-image">
-          <Image src={productImageUrl(product)} alt={product.name} fill unoptimized loading="eager" fetchPriority="high" sizes="(max-width: 767px) 100vw, 55vw" className="object-cover" />
-        </div>
+        <ProductDetailImage key={productImageUrl(product)} src={productImageUrl(product)} name={product.name} />
         <div className="product-detail-copy">
           <p className="eyebrow">{product.category}</p>
           <h1>{product.name}</h1>
