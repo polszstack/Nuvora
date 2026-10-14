@@ -147,10 +147,10 @@ export default function CartPage() {
             </Link>
           </div>
         ) : (
-          <div className="mt-8 grid gap-6 sm:mt-10 lg:grid-cols-[1fr_360px] lg:gap-10">
+          <div className="mt-8 grid gap-6 sm:mt-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-10">
             <div className="divide-y divide-[#e4e8e4] rounded-2xl border border-[#e4e8e4] bg-white px-4 sm:px-6">
               {cartItems.map((item) => (
-                <div key={item.id} className="grid gap-4 py-5 sm:flex sm:items-center sm:justify-between sm:py-6">
+                <div key={item.id} className="grid gap-4 py-5 sm:flex sm:flex-wrap sm:items-center sm:justify-between sm:py-6">
                   <div className="min-w-0">
                     <p className="font-semibold leading-snug">{item.name}</p>
                     <p className="mt-1 text-sm text-[#8b9791]">{formatPhpCurrency(item.price)} each</p>

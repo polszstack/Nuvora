@@ -21,6 +21,13 @@ export function StoreHeader() {
   const menuButton = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    const closeOnDesktop = () => { if (desktop.matches) setMobileMenuOpen(false); };
+    desktop.addEventListener("change", closeOnDesktop);
+    return () => desktop.removeEventListener("change", closeOnDesktop);
+  }, []);
+
+  useEffect(() => {
     let active = true;
     fetch("/api/auth/session")
       .then((response) => response.json() as Promise<{ authenticated: boolean; userType: "CUSTOMER" | "SELLER" | null }>)

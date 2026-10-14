@@ -27,9 +27,9 @@ export default async function SellerProductsPage() {
   if (!seller) redirect("/account/seller/signin");
 
   return (
-    <main className="min-h-screen bg-[#f4f6f3] text-[#1e2a27]">
+    <main className="admin-page min-h-screen bg-[#f4f6f3] text-[#1e2a27]">
       <AdminSidebar active="products" />
-      <section className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 md:ml-64 md:px-8 lg:px-12">
+      <section className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:ml-64 lg:px-8 xl:px-12">
         <div className="mb-8 grid gap-4 sm:mb-10 sm:flex sm:items-center sm:justify-between">
           <div className="min-w-0">
             <p className="text-sm text-[#8c9891]">Catalog management</p>
@@ -46,7 +46,7 @@ export default async function SellerProductsPage() {
         </div>
 
         <div className="overflow-hidden rounded-2xl border border-[#e0e6e1] bg-white">
-          <div className="grid gap-4 border-b border-[#e9eeea] p-4 sm:flex sm:items-center sm:justify-between sm:p-6">
+          <div className="admin-product-header grid gap-4 border-b border-[#e9eeea] p-4 sm:flex sm:items-center sm:justify-between sm:p-6">
             <div>
               <h2 className="font-semibold">Product catalog</h2>
               <p className="mt-1 text-sm leading-6 text-[#8c9891]">Preview and manage products posted to the Nuvora store.</p>
@@ -57,7 +57,7 @@ export default async function SellerProductsPage() {
           {seller.products.length === 0 ? (
             <p className="p-8 text-sm text-[#77817e]">No products yet. Add your first product above.</p>
           ) : (
-            <div className="grid gap-5 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-3">
+            <div className="grid gap-5 p-4 sm:grid-cols-2 sm:p-6 xl:grid-cols-3">
               {seller.products.map((product) => (
                 <article key={product.id} className="overflow-hidden rounded-2xl border border-[#e5ebe6] bg-[#fbfcfa]">
                   <div className="relative aspect-[4/3] overflow-hidden bg-[#e9f0ec]">
@@ -76,7 +76,7 @@ export default async function SellerProductsPage() {
                     </span>
                   </div>
                   <div className="p-5">
-                    <div className="grid gap-2 sm:flex sm:items-start sm:justify-between sm:gap-3">
+                    <div className="grid gap-2">
                       <div className="min-w-0">
                         <p className="text-xs uppercase tracking-wider text-[#98a39f]">{product.category}</p>
                         <h3 className="mt-1 font-semibold leading-snug">{product.name}</h3>
@@ -123,10 +123,10 @@ export default async function SellerProductsPage() {
 
 function AdminSidebar({ active }: { active: "overview" | "products" }) {
   return (
-    <aside className="border-b border-[#e0e6e1] bg-white p-4 md:fixed md:h-screen md:w-64 md:border-b-0 md:border-r md:p-8">
+    <aside className="border-b border-[#e0e6e1] bg-white p-4 lg:fixed lg:h-screen lg:w-64 lg:border-b-0 lg:border-r lg:p-8">
       <Link href="/" className="text-xl font-bold tracking-tight">nuvora<span className="text-[#e58d61]">.</span></Link>
-      <p className="mb-4 mt-2 text-xs text-[#93a098] md:mb-10">Seller workspace</p>
-      <nav className="flex gap-2 overflow-x-auto text-sm md:block md:space-y-2 md:overflow-visible">
+      <p className="mb-4 mt-2 text-xs text-[#93a098] lg:mb-10">Seller workspace</p>
+      <nav className="flex gap-2 overflow-x-auto text-sm lg:block lg:space-y-2 lg:overflow-visible">
         <Link href="/admin" className={`block rounded-xl px-4 py-3 ${active === "overview" ? "bg-[#e9f0ec] font-semibold" : "text-[#718079] hover:bg-[#f4f6f3]"}`}>
           Overview
         </Link>

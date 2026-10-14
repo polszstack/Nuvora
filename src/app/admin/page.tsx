@@ -24,9 +24,9 @@ async function AdminContent({ sessionPromise }: { sessionPromise: ReturnType<typ
   const inventory = seller.products.reduce((total, product) => total + product.stock, 0);
 
   return (
-    <main className="min-h-screen bg-[#f4f6f3] text-[#1e2a27]">
+    <main className="admin-page min-h-screen bg-[#f4f6f3] text-[#1e2a27]">
       <AdminSidebar active="overview" />
-      <section className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 md:ml-64 md:px-8 lg:px-12">
+      <section className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:ml-64 lg:px-8 xl:px-12">
         <div className="mb-8 grid gap-4 sm:mb-10 sm:flex sm:items-center sm:justify-between">
           <div className="min-w-0">
             <p className="text-sm text-[#8c9891]">Seller dashboard</p>
@@ -53,7 +53,7 @@ async function AdminContent({ sessionPromise }: { sessionPromise: ReturnType<typ
         </div>
 
         <div id="products" className="mt-8 overflow-hidden rounded-2xl border border-[#e0e6e1] bg-white">
-          <div className="grid gap-4 border-b border-[#e9eeea] p-4 sm:flex sm:items-center sm:justify-between sm:p-6">
+          <div className="admin-product-header grid gap-4 border-b border-[#e9eeea] p-4 sm:flex sm:items-center sm:justify-between sm:p-6">
             <div>
               <h2 className="font-semibold">Your products</h2>
               <p className="mt-1 text-sm leading-6 text-[#8c9891]">Add products and monitor inventory.</p>
@@ -88,10 +88,10 @@ async function AdminContent({ sessionPromise }: { sessionPromise: ReturnType<typ
 
 function AdminSidebar({ active }: { active: "overview" | "products" }) {
   return (
-    <aside className="border-b border-[#e0e6e1] bg-white p-4 md:fixed md:h-screen md:w-64 md:border-b-0 md:border-r md:p-8">
+    <aside className="border-b border-[#e0e6e1] bg-white p-4 lg:fixed lg:h-screen lg:w-64 lg:border-b-0 lg:border-r lg:p-8">
       <Link href="/" className="text-xl font-bold tracking-tight">nuvora<span className="text-[#e58d61]">.</span></Link>
-      <p className="mb-4 mt-2 text-xs text-[#93a098] md:mb-10">Seller workspace</p>
-      <nav className="flex gap-2 overflow-x-auto text-sm md:block md:space-y-2 md:overflow-visible">
+      <p className="mb-4 mt-2 text-xs text-[#93a098] lg:mb-10">Seller workspace</p>
+      <nav className="flex gap-2 overflow-x-auto text-sm lg:block lg:space-y-2 lg:overflow-visible">
         <Link href="/admin" className={`block rounded-xl px-4 py-3 ${active === "overview" ? "bg-[#e9f0ec] font-semibold" : "text-[#718079] hover:bg-[#f4f6f3]"}`}>
           Overview
         </Link>
@@ -110,7 +110,7 @@ function Stat({ label, value, change }: { label: string; value: string; change: 
   return (
     <div className="rounded-2xl border border-[#e0e6e1] bg-white p-5 sm:p-6">
       <p className="text-sm text-[#8c9891]">{label}</p>
-      <div className="mt-3 grid gap-3 sm:flex sm:items-end sm:justify-between">
+      <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
         <strong className="text-3xl tracking-tight">{value}</strong>
         <span className="w-fit rounded-full bg-[#e9f0ec] px-2.5 py-1 text-xs font-semibold text-[#557367]">{change}</span>
       </div>

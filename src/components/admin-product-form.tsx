@@ -38,7 +38,7 @@ export function AdminProductForm() {
   }
 
   return (
-    <form onSubmit={submit} className="border-b border-[#e9eeea] bg-[#fbfcfa] p-4 sm:p-6">
+    <form onSubmit={submit} className="admin-product-form border-b border-[#e9eeea] bg-[#fbfcfa] p-4 sm:p-6">
       <div className="grid gap-3 sm:grid-cols-2">
         <input name="name" required placeholder="Product name" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} className="rounded-xl border border-[#dfe5e0] bg-white px-4 py-3 text-sm outline-none focus:border-[#e58d61]" />
         <select name="category" value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })} className="rounded-xl border border-[#dfe5e0] bg-white px-4 py-3 text-sm">

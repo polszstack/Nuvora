@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { connection } from "next/server";
 import { ProductCard } from "@/components/product-card";
 import { ScrollRevealObserver } from "@/components/scroll-reveal-observer";
 import { StoreHeader } from "@/components/store-header";
@@ -15,6 +16,8 @@ const categories: { name: string; icon: IconName; note: string }[] = [
 ];
 
 export default async function Home() {
+  // Load current inventory at request time, without needing the database during builds.
+  await connection();
   const databaseProducts = await prisma.product.findMany({
     where: { isActive: true, name: { not: "Linen Journal" } },
     orderBy: { createdAt: "desc" },

@@ -388,6 +388,83 @@ main { flex: 1; }
   .mobile-shop-link { display: flex; margin-top: 28px; }
 }
 
+/* Let content shrink inside grids and wrap user-entered names and addresses. */
+:where(.storefront, .account-page, .profile-page, .admin-page, .cart-page) :where(h1, h2, h3, p, strong) { overflow-wrap: anywhere; }
+:where(.home-hero, .about-hero, .product-detail-grid, .footer-main, .community-grid, .account-choices) > * { min-width: 0; }
+input, select, textarea { min-width: 0; max-width: 100%; }
+.header-actions, .wordmark, .community-icon { flex-shrink: 0; }
+.icon-button { min-width: 44px; min-height: 44px; }
+.mobile-nav { max-height: calc(100dvh - 100px); overflow-y: auto; overscroll-behavior: contain; }
+.product-seller-byline { flex-wrap: wrap; }
+.product-seller-byline > span, .product-dot { flex-shrink: 0; }
+.catalog-toolbar, .catalog-filters, .catalog-search { min-width: 0; }
+.filter-pill { flex-shrink: 0; min-height: 44px; }
+.profile-heading > div, .profile-photo-field > div { min-width: 0; }
+.profile-photo-field > div:first-child { flex-shrink: 0; }
+.profile-photo-field > div:last-child { flex: 1; }
+.profile-page form, .profile-page section > div, .admin-product-form { min-width: 0; }
+.admin-product-header { flex-wrap: wrap; }
+.admin-product-form { width: 100%; flex-basis: 100%; }
+.admin-product-form input, .admin-product-form select, .admin-product-form textarea { width: 100%; }
+.admin-page aside { overflow-y: auto; }
+.admin-page aside nav a { flex-shrink: 0; white-space: nowrap; }
+.admin-page section > div > div { min-width: 0; }
+.seller-interest-header { flex-wrap: wrap; }
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .home-hero, .about-hero { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+  .hero-copy h1, .about-hero h1 { font-size: clamp(42px, 5.5vw, 56px); }
+  .hero-visual { height: 440px; }
+  .about-image { min-height: 400px; }
+  .category-grid, .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .story-copy { padding: 28px; }
+  .story-copy h2 { font-size: 36px; }
+  .community-card { padding: 24px; gap: 16px; }
+  .footer-main { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
+  .footer-note { padding-left: 24px; }
+  .about-manifesto .site-container { column-gap: 32px; }
+  .product-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
+}
+@media (max-width: 1023px) {
+  .desktop-nav { display: none; }
+  .mobile-menu-button { display: inline-flex; }
+  .header-inner { min-height: 72px; }
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea,
+  .account-page input, .catalog-search input, .catalog-results-bar select { font-size: 16px; }
+  .cart-page select, .cart-page button, .profile-page button, .admin-page button { min-height: 44px; }
+  .footer-main > div > a:not(.wordmark) { align-items: center; min-height: 44px; margin-top: 0; }
+}
+@media (min-width: 1024px) {
+  .mobile-nav { display: none; }
+}
+@media (max-width: 639px) {
+  .profile-heading { flex-direction: column; gap: 20px; }
+  .profile-heading h1 { font-size: clamp(28px, 8vw, 36px); }
+  .profile-photo-field { flex-direction: column; align-items: flex-start; }
+  .profile-photo-field > div:last-child { width: 100%; }
+  .account-page > section, .profile-page > section { padding-inline: 16px; padding-top: 32px; padding-bottom: 48px; }
+  .account-page form:not(.profile-heading form), .profile-page form:not(.profile-heading form) { padding: 20px; }
+  .section-heading { flex-wrap: wrap; }
+  .section-heading > .text-link { padding-top: 0; }
+  .catalog-results-bar label { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+  .catalog-results-bar select { max-width: 100%; min-height: 44px; }
+  .category-card { min-width: 0; }
+  .category-card > span { min-width: 0; }
+  .product-badge { top: 8px; left: 8px; max-width: calc(100% - 16px); }
+  .detail-shipping svg, .small-leaf { flex-shrink: 0; }
+}
+@media (max-width: 380px) {
+  .header-inner { gap: 8px; }
+  .header-search { display: none; }
+  .about-hero h1 { font-size: 44px; }
+  .category-card { flex-wrap: wrap; }
+  .hero-image-caption { inset-inline: 12px; bottom: 12px; padding: 12px; gap: 8px; }
+  .hero-image-caption strong { font-size: 13px; }
+  .story-copy { padding-inline: 22px; }
+  .community-card { padding: 20px; gap: 12px; }
+  .product-grid { gap: 24px 12px; }
+}
+
 .scroll-reveal {
   --reveal-delay: 0ms;
   --reveal-distance: 34px;
