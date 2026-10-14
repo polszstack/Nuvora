@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AuthForm } from "@/components/auth-form";
 import { StoreHeader } from "@/components/store-header";
 import { createSellerAccount } from "../actions";
 
@@ -10,7 +11,7 @@ export default function SellerAccountPage() {
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#e58d61]">Seller account</p>
         <h1 className="mt-3 text-4xl font-semibold tracking-tight">Open your seller space.</h1>
         <p className="mt-4 text-[#77817e]">Create a shop profile so you can list products and manage orders.</p>
-        <form action={createSellerAccount} className="mt-10 rounded-2xl border border-[#e4e8e4] bg-white p-7 text-left shadow-sm">
+        <AuthForm action={createSellerAccount} className="mt-10 rounded-2xl border border-[#e4e8e4] bg-white p-7 text-left shadow-sm">
           <label className="text-xs font-bold uppercase tracking-wider text-[#77817e]" htmlFor="seller-name">Full name</label>
           <input id="seller-name" name="name" type="text" placeholder="Your name" required className="mt-2 w-full rounded-xl border border-[#dfe5e0] px-4 py-3 outline-none focus:border-[#e58d61]" />
           <label className="mt-4 block text-xs font-bold uppercase tracking-wider text-[#77817e]" htmlFor="shop-name">Shop name</label>
@@ -25,7 +26,7 @@ export default function SellerAccountPage() {
           <input id="seller-password-confirmation" name="passwordConfirmation" type="password" minLength={8} placeholder="Re-enter your password" required className="mt-2 w-full rounded-xl border border-[#dfe5e0] px-4 py-3 outline-none focus:border-[#e58d61]" />
           <button type="submit" className="mt-5 w-full rounded-full bg-[#1e2a27] py-3.5 text-sm font-semibold text-white hover:bg-[#e58d61]">Create seller account</button>
           <p className="mt-5 text-center text-xs text-[#9aa49f]">After signup, you will go to the seller dashboard.</p>
-        </form>
+        </AuthForm>
         <Link href="/account/seller/signin" className="mt-8 inline-block text-sm font-semibold hover:text-[#e58d61]">Already have a seller account? Sign in →</Link>
         <Link href="/admin" className="mt-8 inline-block text-sm font-semibold hover:text-[#e58d61]">Go to seller dashboard</Link>
       </section>

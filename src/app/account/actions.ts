@@ -2,48 +2,108 @@
 
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
+import { AuthError, firebaseAuth, firebaseRequest, type FirebaseLogin } from "@/lib/firebase";
+import type { AuthState } from "@/components/auth-form";
 import { prisma } from "@/lib/prisma";
 import { clearSession, createSession, getSession } from "@/lib/auth";
 
 function getRequiredValue(formData: FormData, field: string) {
   const value = formData.get(field);
   if (typeof value !== "string" || !value.trim()) {
-    throw new Error(`${field} is required.`);
+    throw new AuthError(`${field} is required.`);
   }
 
   return value.trim();
 }
 
-function getPassword(formData: FormData) {
-  const password = getRequiredValue(formData, "password");
-  if (password.length < 8) throw new Error("Password must be at least 8 characters.");
-  const confirmation = getRequiredValue(formData, "passwordConfirmation");
-  if (password !== confirmation) throw new Error("Passwords do not match.");
-  return password;
+function passwordValue(data: FormData, key = "password") {
+  const value = data.get(key);
+  if (typeof value !== "string" || !value) throw new AuthError("Password is required.");
+  return value;
 }
 
-export async function createCustomerAccount(formData: FormData) {
-  const name = getRequiredValue(formData, "name");
-  const email = getRequiredValue(formData, "email").toLowerCase();
-  const passwordHash = await bcrypt.hash(getPassword(formData), 12);
-
-  const customer = await prisma.customer.upsert({
-    where: { email },
-    update: { name, passwordHash },
-    create: { email, name, passwordHash },
-  });
-
-  await createSession(customer.id, "CUSTOMER");
-  redirect("/products");
+function authFailure(error: unknown): AuthState {
+  return { error: error instanceof AuthError ? error.message : "Unable to complete this request. Please try again later." };
 }
 
-export async function signInCustomer(formData: FormData) {
-  const email = getRequiredValue(formData, "email").toLowerCase();
-  const password = getRequiredValue(formData, "password");
-  const customer = await prisma.customer.findUnique({ where: { email } });
-  if (!customer?.passwordHash || !(await bcrypt.compare(password, customer.passwordHash))) throw new Error("Invalid email or password.");
-  await createSession(customer.id, "CUSTOMER");
-  redirect("/products");
+async function register(data: FormData, role: "CUSTOMER" | "SELLER"): Promise<AuthState> {
+  try {
+    const name = getRequiredValue(data, "name");
+    const email = getRequiredValue(data, "email").toLowerCase();
+    const password = passwordValue(data);
+    if (password.length < 8) throw new AuthError("Password must be at least 8 characters.");
+    if (password !== passwordValue(data, "passwordConfirmation")) throw new AuthError("Passwords do not match.");
+    const shopName = role === "SELLER" ? getRequiredValue(data, "shopName") : "";
+    const phone = typeof data.get("phone") === "string" ? String(data.get("phone")).trim() || null : null;
+    const existing = role === "CUSTOMER" ? await prisma.customer.findUnique({ where: { email } }) : await prisma.seller.findUnique({ where: { email } });
+    if (existing) throw new AuthError("An account already exists. Sign in or reset your password.");
+    firebaseAuth(); // Validate server credentials before creating a Firebase user.
+    // If a previous attempt created the Firebase identity but the database failed,
+    // the same password safely resumes registration. This also permits both roles.
+    let login: FirebaseLogin;
+    try {
+      login = await firebaseRequest<FirebaseLogin>("signUp", { email, password, returnSecureToken: true });
+    } catch (error) {
+      if (!(error instanceof AuthError) || error.message !== "An account already exists. Sign in or reset your password.") throw error;
+      login = await firebaseRequest<FirebaseLogin>("signInWithPassword", { email, password, returnSecureToken: true });
+    }
+    const identity = await firebaseAuth().verifyIdToken(login.idToken, true);
+    const account = role === "CUSTOMER"
+      ? await prisma.customer.create({ data: { email, name, firebaseUid: identity.uid } })
+      : await prisma.seller.create({ data: { email, name, shopName, phone, firebaseUid: identity.uid } });
+    await createSession(account.id, role, login.idToken);
+  } catch (error) { return authFailure(error); }
+  redirect(role === "CUSTOMER" ? "/products" : "/admin");
+}
+
+async function signIn(data: FormData, role: "CUSTOMER" | "SELLER"): Promise<AuthState> {
+  try {
+    const email = getRequiredValue(data, "email").toLowerCase();
+    const password = passwordValue(data);
+    const legacy = role === "CUSTOMER"
+      ? await prisma.customer.findUnique({ where: { email } })
+      : await prisma.seller.findUnique({ where: { email } });
+    const canMigrate = legacy && !legacy.firebaseUid && legacy.passwordHash &&
+      (!("isActive" in legacy) || legacy.isActive) && await bcrypt.compare(password, legacy.passwordHash);
+    if (canMigrate) {
+      // Never change an existing Firebase password based on a legacy password.
+      try { await firebaseAuth().getUserByEmail(email); }
+      catch (error) {
+        if ((error as { code?: string }).code !== "auth/user-not-found") throw error;
+        try { await firebaseAuth().createUser({ email, password }); }
+        catch (createError) {
+          if ((createError as { code?: string }).code !== "auth/email-already-exists") throw createError;
+        }
+      }
+    }
+    const login = await firebaseRequest<FirebaseLogin>("signInWithPassword", { email, password, returnSecureToken: true });
+    const identity = await firebaseAuth().verifyIdToken(login.idToken, true);
+    if (canMigrate) {
+      const where = { id: legacy.id, firebaseUid: null };
+      const update = { firebaseUid: identity.uid, passwordHash: null };
+      if (role === "CUSTOMER") await prisma.customer.updateMany({ where, data: update });
+      else await prisma.seller.updateMany({ where, data: update });
+    }
+    const account = role === "CUSTOMER"
+      ? await prisma.customer.findUnique({ where: { firebaseUid: identity.uid } })
+      : await prisma.seller.findUnique({ where: { firebaseUid: identity.uid } });
+    if (!account || ("isActive" in account && !account.isActive)) throw new AuthError("No active account for this role. Create an account or contact support.");
+    await createSession(account.id, role, login.idToken);
+  } catch (error) { return authFailure(error); }
+  redirect(role === "CUSTOMER" ? "/products" : "/admin");
+}
+
+export async function createCustomerAccount(_state: AuthState, data: FormData) { return register(data, "CUSTOMER"); }
+export async function createSellerAccount(_state: AuthState, data: FormData) { return register(data, "SELLER"); }
+export async function signInCustomer(_state: AuthState, data: FormData) { return signIn(data, "CUSTOMER"); }
+export async function signInSeller(_state: AuthState, data: FormData) { return signIn(data, "SELLER"); }
+
+export async function resetPassword(_state: AuthState, data: FormData): Promise<AuthState> {
+  try {
+    const email = getRequiredValue(data, "email").toLowerCase();
+    await firebaseRequest("sendOobCode", { requestType: "PASSWORD_RESET", email });
+    return { message: "If an account exists for this email, a password reset link has been sent. Check your inbox and spam folder." };
+  } catch (error) { return authFailure(error); }
 }
 
 export async function updateCustomerProfile(formData: FormData) {
@@ -66,24 +126,6 @@ export async function updateCustomerProfile(formData: FormData) {
   redirect("/account/customer/profile?saved=1");
 }
 
-export async function createSellerAccount(formData: FormData) {
-  const name = getRequiredValue(formData, "name");
-  const shopName = getRequiredValue(formData, "shopName");
-  const email = getRequiredValue(formData, "email").toLowerCase();
-  const phoneValue = formData.get("phone");
-  const phone = typeof phoneValue === "string" && phoneValue.trim() ? phoneValue.trim() : null;
-  const passwordHash = await bcrypt.hash(getPassword(formData), 12);
-
-  const seller = await prisma.seller.upsert({
-    where: { email },
-    update: { name, shopName, phone, passwordHash },
-    create: { email, name, shopName, phone, passwordHash },
-  });
-
-  await createSession(seller.id, "SELLER");
-  redirect("/admin");
-}
-
 export async function updateSellerProfile(formData: FormData) {
   const session = await getSession();
   if (!session || session.userType !== "SELLER") redirect("/account/seller/signin");
@@ -100,15 +142,6 @@ export async function updateSellerProfile(formData: FormData) {
   }
   await prisma.seller.update({ where: { id: session.userId }, data: { name, shopName, phone, ...(profilePhoto ? { profilePhoto } : {}) } });
   redirect("/account/seller/profile?saved=1");
-}
-
-export async function signInSeller(formData: FormData) {
-  const email = getRequiredValue(formData, "email").toLowerCase();
-  const password = getRequiredValue(formData, "password");
-  const seller = await prisma.seller.findUnique({ where: { email } });
-  if (!seller?.passwordHash || !(await bcrypt.compare(password, seller.passwordHash))) throw new Error("Invalid email or password.");
-  await createSession(seller.id, "SELLER");
-  redirect("/admin");
 }
 
 export async function signOut() {

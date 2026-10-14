@@ -35,6 +35,7 @@ model Seller {
   shopName     String
   phone        String?
   profilePhoto String?   @db.LongText
+  firebaseUid  String?   @unique
   passwordHash String?
   isActive     Boolean   @default(true)
   products     Product[]
@@ -51,6 +52,7 @@ model Customer {
   phone        String?
   address      String?    @db.Text
   profilePhoto String?    @db.LongText
+  firebaseUid  String?   @unique
   passwordHash String?
   createdAt    DateTime   @default(now())
   orders       Order[]
