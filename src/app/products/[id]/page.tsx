@@ -3,21 +3,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCart } from "@/components/add-to-cart";
 import { StoreHeader } from "@/components/store-header";
-import { Icon, type IconName } from "@/components/ui-icon";
+import { Icon } from "@/components/ui-icon";
 import { convertUsdToPhp, formatPhpCurrency, FREE_SHIPPING_THRESHOLD_USD } from "@/lib/currency";
 import { prisma } from "@/lib/prisma";
-
-const categoryIcons: Record<string, IconName> = { Workspace: "desk", Wellness: "sun", Audio: "headphones", Travel: "bag" };
+import { productImageUrl, storeProductSelect } from "@/lib/store-products";
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const product = await prisma.product.findFirst({
     where: { OR: [{ id }, { slug: id }], isActive: true },
-    include: {
-      seller: {
-        select: { name: true, shopName: true, isActive: true },
-      },
-    },
+    select: storeProductSelect,
   });
   if (!product) notFound();
   const priceInPhp = convertUsdToPhp(Number(product.price));
@@ -28,7 +23,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       <nav className="product-breadcrumb" aria-label="Breadcrumb"><Link href="/products">The collection</Link><span aria-hidden="true">/</span><Link href={`/products?category=${encodeURIComponent(product.category)}`}>{product.category}</Link><span aria-hidden="true">/</span><span aria-current="page">{product.name}</span></nav>
       <div className="product-detail-grid">
         <div className="product-detail-image">
-          {product.imageUrl ? <Image src={product.imageUrl} alt={product.name} fill unoptimized sizes="(max-width: 767px) 100vw, 55vw" className="object-cover" /> : <div className="product-placeholder"><span className="placeholder-orbit" /><Icon name={categoryIcons[product.category] || "box"} size={96} strokeWidth={.8} /><span className="placeholder-label">Image coming soon</span></div>}
+          <Image src={productImageUrl(product)} alt={product.name} fill unoptimized loading="eager" fetchPriority="high" sizes="(max-width: 767px) 100vw, 55vw" className="object-cover" />
         </div>
         <div className="product-detail-copy">
           <p className="eyebrow">{product.category}</p>
