@@ -7,6 +7,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
+    "test:firebase-runtime": "node --no-experimental-require-module --test tests/firebase-runtime.test.mjs",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts"
@@ -18,6 +19,11 @@
     "next": "16.3.5",
     "react": "19.2.8",
     "react-dom": "19.2.8"
+  },
+  "overrides": {
+    "jwks-rsa": {
+      "jose": "5.10.0"
+    }
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

@@ -91,6 +91,16 @@ profiles exist, sign in to each role to migrate each profile.
 
 ### Verification
 
+Vercel disables Node's `require(ESM)` support by default. Firebase Admin 14 loads
+`jwks-rsa`, whose CommonJS entry point requires the ESM-only `jose` 6 package.
+The scoped override in `package.json` uses `jose` 5.10.0 for `jwks-rsa` so account
+pages and session routes load without an experimental runtime flag. Keep
+`package-lock.json` with this change and deploy both files. See the
+[upstream compatibility issue](https://github.com/auth0/node-jwks-rsa/issues/507).
+Remove the override when that dependency supports loading ESM without
+`require(ESM)`, after running `npm run test:firebase-runtime`. That regression check
+disables `require(ESM)` and verifies both Firebase's import and JWKS key conversion.
+
 Run `npm run lint`, `npx tsc --noEmit`, and `npm run build`. With a configured test
 Firebase project and database, verify customer and seller registration, duplicate-email
 rejection, invalid credentials, both roles for one email, old-account migration, sign-out,
